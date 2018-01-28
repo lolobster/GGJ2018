@@ -29,6 +29,7 @@ private:
 	SDL_Renderer *m_renderer;
 
 	SDL_Texture *m_bgTexture;
+	SDL_Texture *m_winTexture;
 	
 	std::vector<GameObject*> m_signalObjects;
 	std::vector<GameObject*> m_asteroids;

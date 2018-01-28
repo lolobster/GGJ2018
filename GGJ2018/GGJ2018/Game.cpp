@@ -5,7 +5,6 @@ Game::Game() :
 m_renderer(nullptr),
 m_signalObjects(),
 m_asteroids(),
-m_bgTexture(nullptr),
 m_earth(new GameObject),
 m_moon(new GameObject),
 m_alien(new GameObject),
@@ -52,6 +51,13 @@ m_win(false)
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to load background image!");
 	}
 
+	// Load win texture
+	m_winTexture = IMG_LoadTexture(m_renderer, "../textures/contact.png");
+	if (m_winTexture == NULL)
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to load victory image!");
+	}
+
 	// Load game object textures
 	m_earth->setTexture("../textures/earth.png", m_renderer);
 	m_earth->setX(m_windowManager.windowWidth() - m_earth->rect().w);
@@ -89,6 +95,8 @@ m_win(false)
 
 Game::~Game()
 {
+	SDL_DestroyTexture(m_bgTexture);
+	SDL_DestroyTexture(m_winTexture);
 
 	delete m_alien;
 	delete m_earth;
@@ -161,49 +169,52 @@ void Game::run()
 
 void Game::update()
 {
-	// Update all the things
-	// EARTH
-	m_earth->setAngle(0.25f);
-	
-	// MOON
-	m_moon->setAngle(0.5f);
-	SDL_Point moonCenter = { m_moon->rect().x + m_moon->rect().w * 0.5,
-							 m_moon->rect().y - m_moon->rect().h * 0.5 };
-	SDL_Point earthCenter = { m_earth->rect().x + m_earth->rect().w * 0.5,
-							  m_earth->rect().y + m_earth->rect().h * 0.5 };
-
-	float radian = (m_moon->angle()*2 * M_PI) / 180;
-
-	float deltaX = earthCenter.x - (m_radius * cos(radian));
-	float deltaY = earthCenter.y - (m_radius * sin(radian));
-	
- 	m_moon->setX(deltaX);
-	m_moon->setY(deltaY);
-
-	for (int ast = 0; ast < m_asteroids.size(); ++ast)
+	if (!m_win)
 	{
-		GameObject *asteroid = m_asteroids.at(ast);
-	
-		asteroid->setAngle(0.25f + ast * 0.5f);
+		// Update all the things
+		// EARTH
+		m_earth->setAngle(0.25f);
 
-		SDL_Point asteroidCenter = { asteroid->rect().x + asteroid->rect().w * 0.5,
-			asteroid->rect().y - asteroid->rect().h * 0.5 };
+		// MOON
+		m_moon->setAngle(0.5f);
+		SDL_Point moonCenter = { m_moon->rect().x + m_moon->rect().w * 0.5,
+			m_moon->rect().y - m_moon->rect().h * 0.5 };
+		SDL_Point earthCenter = { m_earth->rect().x + m_earth->rect().w * 0.5,
+			m_earth->rect().y + m_earth->rect().h * 0.5 };
 
-		float radian = (asteroid->angle() * 2 * M_PI) / 180;
+		float radian = (m_moon->angle() * 2 * M_PI) / 180;
 
-		int asteroidRad = m_radius * 3 + ast * 50;
+		float deltaX = earthCenter.x - (m_radius * cos(radian));
+		float deltaY = earthCenter.y - (m_radius * sin(radian));
 
-		float deltaX = earthCenter.x - (asteroidRad * cos(radian));
-		float deltaY = earthCenter.y - (asteroidRad * sin(radian));
+		m_moon->setX(deltaX);
+		m_moon->setY(deltaY);
 
-		asteroid->setX(deltaX);
-		asteroid->setY(deltaY);
-	}
+		for (int ast = 0; ast < m_asteroids.size(); ++ast)
+		{
+			GameObject *asteroid = m_asteroids.at(ast);
 
-	// Check for collisions
-	if (m_signalObjects.size() > 0)
-	{
-		handleCollision();
+			asteroid->setAngle(0.25f + ast * 0.5f);
+
+			SDL_Point asteroidCenter = { asteroid->rect().x + asteroid->rect().w * 0.5,
+				asteroid->rect().y - asteroid->rect().h * 0.5 };
+
+			float radian = (asteroid->angle() * 2 * M_PI) / 180;
+
+			int asteroidRad = m_radius * 3 + ast * 50;
+
+			float deltaX = earthCenter.x - (asteroidRad * cos(radian));
+			float deltaY = earthCenter.y - (asteroidRad * sin(radian));
+
+			asteroid->setX(deltaX);
+			asteroid->setY(deltaY);
+		}
+
+		// Check for collisions
+		if (m_signalObjects.size() > 0)
+		{
+			handleCollision();
+		}
 	}
 
 	// Draw all the things
@@ -215,65 +226,72 @@ void Game::update()
 
 void Game::draw()
 {
-	// Draw BACKGROUND
-	SDL_RenderCopy(m_renderer, m_bgTexture, NULL, NULL);
-
-	// Draw SIGNALS
-	if (m_signalObjects.size() > 0)
+	if (!m_win)
 	{
-		for (int i = 0; i < m_signalObjects.size(); ++i)
+		// Draw BACKGROUND
+		SDL_RenderCopy(m_renderer, m_bgTexture, NULL, NULL);
+
+		// Draw SIGNALS
+		if (m_signalObjects.size() > 0)
 		{
-			SDL_RenderCopy(m_renderer, m_signalObjects.at(i)->texture(), NULL, &m_signalObjects.at(i)->rect());
+			for (int i = 0; i < m_signalObjects.size(); ++i)
+			{
+				SDL_RenderCopy(m_renderer, m_signalObjects.at(i)->texture(), NULL, &m_signalObjects.at(i)->rect());
+			}
 		}
-	}
 
-	// Draw ALIEN
-	SDL_RenderCopy(m_renderer, m_alien->texture(), NULL, &m_alien->rect());
+		// Draw ALIEN
+		SDL_RenderCopy(m_renderer, m_alien->texture(), NULL, &m_alien->rect());
 
-	// Draw EARTH
-	SDL_Point earthCenter = { m_earth->rect().w * 0.5, m_earth->rect().h* 0.5 };
-	SDL_RenderCopyEx(m_renderer, m_earth->texture(), NULL, &m_earth->rect(), m_earth->angle(), &earthCenter, SDL_FLIP_NONE);
+		// Draw EARTH
+		SDL_Point earthCenter = { m_earth->rect().w * 0.5, m_earth->rect().h* 0.5 };
+		SDL_RenderCopyEx(m_renderer, m_earth->texture(), NULL, &m_earth->rect(), m_earth->angle(), &earthCenter, SDL_FLIP_NONE);
 
-	// Move, rotate and draw MOON
-	SDL_Point moonCenter = { m_moon->rect().w * 0.5, m_moon->rect().h* 0.5 };
-	SDL_RenderCopyEx(m_renderer, m_moon->texture(), NULL, &m_moon->rect(), m_moon->angle(), &moonCenter, SDL_FLIP_NONE);
+		// Move, rotate and draw MOON
+		SDL_Point moonCenter = { m_moon->rect().w * 0.5, m_moon->rect().h* 0.5 };
+		SDL_RenderCopyEx(m_renderer, m_moon->texture(), NULL, &m_moon->rect(), m_moon->angle(), &moonCenter, SDL_FLIP_NONE);
 
-	// Move, rotate and draw ASTEROIDS
-	for (int j = 0; j < m_asteroids.size(); ++j)
-	{
-		GameObject *asteroid = m_asteroids.at(j);
-		SDL_Point asteroidCenter = { asteroid->rect().w * 0.5, asteroid->rect().h* 0.5 };
-		SDL_RenderCopyEx(m_renderer, asteroid->texture(), NULL, &asteroid->rect(), asteroid->angle(), &asteroidCenter, SDL_FLIP_NONE);
-	}
+		// Move, rotate and draw ASTEROIDS
+		for (int j = 0; j < m_asteroids.size(); ++j)
+		{
+			GameObject *asteroid = m_asteroids.at(j);
+			SDL_Point asteroidCenter = { asteroid->rect().w * 0.5, asteroid->rect().h* 0.5 };
+			SDL_RenderCopyEx(m_renderer, asteroid->texture(), NULL, &asteroid->rect(), asteroid->angle(), &asteroidCenter, SDL_FLIP_NONE);
+		}
 
-	// Draw text
-	SDL_Rect textRect;
-	SDL_QueryTexture(m_textTexture, NULL, NULL, &textRect.w, &textRect.h);
-	textRect.x = m_alien->rect().x;
-	textRect.y = m_alien->rect().y - m_alien->rect().h - textRect.h;
-	SDL_RenderCopy(m_renderer, m_textTexture, NULL, &textRect);
+		// Draw text
+		SDL_Rect textRect;
+		SDL_QueryTexture(m_textTexture, NULL, NULL, &textRect.w, &textRect.h);
+		textRect.x = m_alien->rect().x;
+		textRect.y = m_alien->rect().y - m_alien->rect().h - textRect.h;
+		SDL_RenderCopy(m_renderer, m_textTexture, NULL, &textRect);
 
-	SDL_Rect weaponTextRect;
-	SDL_QueryTexture(m_weaponTextTexture, NULL, NULL, &weaponTextRect.w, &weaponTextRect.h);
-	weaponTextRect.x = m_windowManager.windowWidth() * 0.5 - weaponTextRect.w * 0.5;
-	weaponTextRect.y = m_windowManager.windowHeight() - weaponTextRect.h;
-	if (m_inputTimer.getTicks() >= 3500)
-	{
-		SDL_Color col = { 0, 255, 0 };
-		SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "Ready for transmission!", col);
-		m_weaponTextTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
-		SDL_FreeSurface(textSurface);
-		SDL_RenderCopy(m_renderer, m_weaponTextTexture, NULL, &weaponTextRect);
+		SDL_Rect weaponTextRect;
+		SDL_QueryTexture(m_weaponTextTexture, NULL, NULL, &weaponTextRect.w, &weaponTextRect.h);
+		weaponTextRect.x = m_windowManager.windowWidth() * 0.5 - weaponTextRect.w * 0.5;
+		weaponTextRect.y = m_windowManager.windowHeight() - weaponTextRect.h;
+		if (m_inputTimer.getTicks() >= 3500)
+		{
+			SDL_Color col = { 0, 255, 0 };
+			SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "Ready for transmission! Press SPACE to send signal", col);
+			m_weaponTextTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+			SDL_FreeSurface(textSurface);
+			SDL_RenderCopy(m_renderer, m_weaponTextTexture, NULL, &weaponTextRect);
+		}
+		else
+		{
+			SDL_Color col = { 255, 0, 0 };
+			SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "Preparing transmitter", col);
+			m_weaponTextTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
+			SDL_FreeSurface(textSurface);
+			SDL_RenderCopy(m_renderer, m_weaponTextTexture, NULL, &weaponTextRect);
+		}
 	}
 	else
 	{
-		SDL_Color col = { 255, 0, 0 };
-		SDL_Surface* textSurface = TTF_RenderText_Solid(m_font, "Preparing transmitter", col);
-		m_weaponTextTexture = SDL_CreateTextureFromSurface(m_renderer, textSurface);
-		SDL_FreeSurface(textSurface);
-		SDL_RenderCopy(m_renderer, m_weaponTextTexture, NULL, &weaponTextRect);
+		// Draw VICTORY BACKGROUND
+		SDL_RenderCopy(m_renderer, m_winTexture, NULL, NULL);
 	}
-
 	// Update screen
 	SDL_RenderPresent(m_renderer);
 }
@@ -303,18 +321,25 @@ void Game::handleInput()
 				}
 				case SDLK_SPACE:
 				{
-					if (m_inputTimer.getTicks() >= 3500)
+					if (!m_win)
 					{
-						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "New signal");
+						if (m_inputTimer.getTicks() >= 3500)
+						{
+							SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "New signal");
 
-						GameObject *signal = new GameObject();
-						signal->setTexture("../textures/signal.png", m_renderer);
-						signal->setX(0 + m_alien->rect().w * 1.25f);
-						signal->setY(m_windowManager.windowHeight() * 0.5f - signal->rect().h * 0.5f);
+							GameObject *signal = new GameObject();
+							signal->setTexture("../textures/signal.png", m_renderer);
+							signal->setX(0 + m_alien->rect().w * 1.25f);
+							signal->setY(m_windowManager.windowHeight() * 0.5f - signal->rect().h * 0.5f);
 
-						m_signalObjects.push_back(signal);
-						m_inputTimer.stop();
-						m_inputTimer.start();
+							m_signalObjects.push_back(signal);
+							m_inputTimer.stop();
+							m_inputTimer.start();
+						}
+					}
+					else
+					{
+						m_win = false;
 					}
 					break;
 				}
@@ -341,6 +366,7 @@ void Game::handleCollision()
 			// Delete last SIGNAL object
 			delete signal;
 			m_signalObjects.erase(m_signalObjects.begin() + i);
+			m_win = true;
 		}
 		// Horrible
 		else if (signal->rect().x + signal->rect().w >= m_moon->rect().x &&
