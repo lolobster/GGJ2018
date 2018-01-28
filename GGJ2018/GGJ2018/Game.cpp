@@ -38,8 +38,6 @@ m_win(false)
 	{
 		m_bgMusic = Mix_LoadMUS("../audio/bg.ogg");
 		Mix_PlayMusic(m_bgMusic, -1);
-
-		m_signalSound = Mix_LoadMUS("../audio/signal.ogg");
 	}
 
 
@@ -356,7 +354,6 @@ void Game::handleInput()
 							m_signalObjects.push_back(signal);
 							m_inputTimer.stop();
 							m_inputTimer.start();
-							Mix_PlayMusic(m_bgMusic, 0);
 						}
 					}
 					else
