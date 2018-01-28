@@ -24,6 +24,25 @@ m_win(false)
 	// Init renderer
 	m_renderer = SDL_CreateRenderer(m_windowManager.window(), -1, SDL_RENDERER_ACCELERATED);
 
+	//Initialize SDL
+	if (SDL_Init(SDL_INIT_AUDIO) < 0)
+	{
+		SDL_Log("SDL audio could not initialize!");
+	}
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		SDL_Log("Mixer could not initialize!");
+	}
+	else
+	{
+		m_bgMusic = Mix_LoadMUS("../audio/bg.ogg");
+		Mix_PlayMusic(m_bgMusic, -1);
+
+		m_signalSound = Mix_LoadMUS("../audio/signal.ogg");
+	}
+
+
 	// Init text
 	TTF_Init();
 	m_font = TTF_OpenFont("../font/moonhouse.ttf", 36);
@@ -86,7 +105,7 @@ m_win(false)
 		
 		m_asteroids.push_back(asteroid);
 
-		asteroidRad += 0.5f;
+		asteroidRad += 50;
 	}
 
 	m_alien->setTexture("../textures/alien.png", m_renderer);
@@ -95,6 +114,8 @@ m_win(false)
 
 Game::~Game()
 {
+	Mix_FreeMusic(m_bgMusic);
+
 	SDL_DestroyTexture(m_bgTexture);
 	SDL_DestroyTexture(m_winTexture);
 
@@ -194,14 +215,14 @@ void Game::update()
 		{
 			GameObject *asteroid = m_asteroids.at(ast);
 
-			asteroid->setAngle(0.25f + ast * 0.5f);
+			asteroid->setAngle(0.75f + ast * 0.5f);
 
 			SDL_Point asteroidCenter = { asteroid->rect().x + asteroid->rect().w * 0.5,
 				asteroid->rect().y - asteroid->rect().h * 0.5 };
 
 			float radian = (asteroid->angle() * 2 * M_PI) / 180;
 
-			int asteroidRad = m_radius * 3 + ast * 50;
+			int asteroidRad = m_radius * 3 + ast * 70;
 
 			float deltaX = earthCenter.x - (asteroidRad * cos(radian));
 			float deltaY = earthCenter.y - (asteroidRad * sin(radian));
@@ -335,11 +356,13 @@ void Game::handleInput()
 							m_signalObjects.push_back(signal);
 							m_inputTimer.stop();
 							m_inputTimer.start();
+							Mix_PlayMusic(m_bgMusic, 0);
 						}
 					}
 					else
 					{
 						m_win = false;
+						SDL_Log("Restarting game...");
 					}
 					break;
 				}
@@ -367,6 +390,7 @@ void Game::handleCollision()
 			delete signal;
 			m_signalObjects.erase(m_signalObjects.begin() + i);
 			m_win = true;
+			SDL_Log("VICTORY!");
 		}
 		// Horrible
 		else if (signal->rect().x + signal->rect().w >= m_moon->rect().x &&

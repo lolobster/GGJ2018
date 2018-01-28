@@ -51,8 +51,8 @@
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)/include/lib/SDL/SDL2;$(SolutionDir)/include/SDL/lib/SDL_image/;$(SolutionDir)/include/SDL/lib/SDL_ttf/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/include/lib/SDL/SDL2;$(SolutionDir)/include/SDL/lib/SDL_image/;$(SolutionDir)/include/SDL/lib/SDL_ttf/;$(SolutionDir)/include/SDL/lib/SDL_mixer/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -71,8 +71,8 @@
       <EntryPointSymbol>
       </EntryPointSymbol>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)/include/lib/SDL/SDL2;$(SolutionDir)/include/SDL/lib/SDL_image/;$(SolutionDir)/include/SDL/lib/SDL_ttf/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/include/lib/SDL/SDL2;$(SolutionDir)/include/SDL/lib/SDL_image/;$(SolutionDir)/include/SDL/lib/SDL_ttf/;$(SolutionDir)/include/SDL/lib/SDL_mixer/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

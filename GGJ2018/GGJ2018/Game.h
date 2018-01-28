@@ -3,6 +3,7 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "SDL_mixer.h"
 #include "WindowManager.h"
 #include "GameObject.h"
 #include "Timer.h"
@@ -43,6 +44,9 @@ private:
 	SDL_Texture *m_weaponTextTexture;
 	std::string m_text;
 	std::vector<std::string> m_alienLines;
+
+	// Audio
+	Mix_Music *m_bgMusic;
 
 	Timer m_inputTimer;
 
